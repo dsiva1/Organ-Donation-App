@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.rememberScaffoldState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -13,24 +14,36 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.organdonation.R
+import com.organdonation.drawer.DrawerBody
+import com.organdonation.drawer.DrawerHeader
+import com.organdonation.drawer.TopBar
 import com.organdonation.routing.Screen
 import com.organdonation.ui.model.DonorModel
+import com.organdonation.ui.organ_preference.OrganPreference
 import com.organdonation.ui.theme.*
 import com.organdonation.utils.CustomSearchView
 import com.organdonation.utils.RoundedButton
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun MainScreen(navController: NavController) {
     val context = LocalContext.current
+    val preference = remember {
+        OrganPreference(context)
+    }
     val scrollState = rememberScrollState()
+    val scaffoldState = rememberScaffoldState()
+    val scope = rememberCoroutineScope()
+    var isLogout by remember { mutableStateOf(false) }
     var search by remember { mutableStateOf("") }
     val list = arrayListOf<DonorModel>().apply {
         add(DonorModel(name = "Test Donor", mobile = "9879879879", donate = "Kidney"))
@@ -52,38 +65,47 @@ fun MainScreen(navController: NavController) {
 
     }
     OrganDonationAppTheme {
-        Scaffold {
+        androidx.compose.material.Scaffold(
+            scaffoldState = scaffoldState,
+            topBar = {
+                TopBar(
+                    navController = navController,
+                    onNavigationIconClick = {
+                        scope.launch {
+                            scaffoldState.drawerState.open()
+                        }
+                    }
+                )
+            },
+            modifier = Modifier.background(color = black),
+            drawerContent = {
+                DrawerHeader()
+                DrawerBody(onLogout = {
+                    isLogout = true
+                    scope.launch {
+                        scaffoldState.drawerState.close()
+                    }
+                })
+            },
+            drawerBackgroundColor = appColor,
+            contentColor = black,
+            drawerContentColor = black
+        ) { paddingValues ->
+            Modifier.padding(
+                bottom = paddingValues.calculateBottomPadding()
+            )
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(black)
+                    .background(appColor)
                     .verticalScroll(scrollState)
             ) {
-                Spacer(modifier = Modifier.height(40.dp))
                 Column(
                     Modifier
                         .fillMaxSize()
                         .background(appColor).padding(5.dp)
                 ) {
-                    SmallTopAppBar(
-                        title = {
-                            Text(
-                                text = "Home", color = black,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(10.dp),
-                                style = TextStyle(
-                                    fontWeight = FontWeight.SemiBold,
-                                    fontSize = 18.sp
-                                )
-                            )
-                        },
 
-                        colors = TopAppBarDefaults.smallTopAppBarColors(
-                            containerColor = appColor,
-                            titleContentColor = black
-                        )
-                    )
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
@@ -100,7 +122,7 @@ fun MainScreen(navController: NavController) {
                             modifier = Modifier
                                 .padding(bottom = 10.dp, start = 10.dp, end = 10.dp)
                                 .fillMaxWidth()
-                                .height(250.dp),
+                                .height(300.dp),
                             shape = RoundedCornerShape(10.dp),
                             colors = CardDefaults.cardColors(containerColor = white),
                             elevation = CardDefaults.cardElevation(defaultElevation = 5.dp)
@@ -152,14 +174,23 @@ fun MainScreen(navController: NavController) {
                                 color = Color.Gray,
                                 modifier = Modifier.fillMaxWidth()
                             )
-                            Spacer(Modifier.height(10.dp))
-                            Box(Modifier.padding(15.dp)) {
+                            Box(Modifier.padding(10.dp)) {
                                 RoundedButton(
-                                    text = "Donate",
+                                    text = "Donor Form",
                                     backgroundColor = black,
                                     textColor = white,
                                     onClick = {
-                                        navController.navigate(Screen.DonateScreen.route)
+                                        navController.navigate(Screen.DonorForm.route)
+                                    }
+                                )
+                            }
+                            Box(Modifier.padding(10.dp)) {
+                                RoundedButton(
+                                    text = "Donor Body Form",
+                                    backgroundColor = black,
+                                    textColor = white,
+                                    onClick = {
+                                        navController.navigate(Screen.DonorBodyForm.route)
                                     }
                                 )
                             }
@@ -167,6 +198,43 @@ fun MainScreen(navController: NavController) {
                     }
                 }
             }
+        }
+        if (isLogout) {
+            AlertDialog(
+                onDismissRequest = {
+                    isLogout = false
+                },
+                title = { Text(stringResource(id = R.string.app_name)) },
+                text = { Text("Are you sure you want to logout ?") },
+                confirmButton = {
+                    RoundedButton(
+                        text = "Cancel",
+                        backgroundColor = appColor,
+                        textColor = black,
+                        onClick = { isLogout = false }
+                    )
+                },
+                dismissButton = {
+
+                    RoundedButton(
+                        text = "Logout",
+                        backgroundColor = appColor,
+                        textColor = black,
+                        onClick = {
+                            preference.saveData("isLogin", false)
+                            navController.navigate(
+                                Screen.LoginScreen.route
+                            ) {
+                                popUpTo(Screen.MainScreen.route) {
+                                    inclusive = true
+                                }
+                            }
+                            isLogout = false
+                        }
+                    )
+
+                }
+            )
         }
 
     }

@@ -11,15 +11,18 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.organdonation.R
 import com.organdonation.routing.Screen
+import com.organdonation.ui.organ_preference.OrganPreference
 import com.organdonation.ui.theme.OrganDonationAppTheme
 import com.organdonation.ui.theme.appColor
 import kotlinx.coroutines.delay
@@ -29,13 +32,26 @@ import kotlin.time.Duration.Companion.seconds
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun SplashScreen(navController: NavController) {
+    val context = LocalContext.current
+    val preference = remember {
+        OrganPreference(context)
+    }
     LaunchedEffect(Unit) {
         delay(3.seconds)
-        navController.navigate(Screen.LoginScreen.route) {
-            popUpTo(Screen.SplashScreen.route) {
-                inclusive = true
+        if(preference.getData("isLogin")) {
+            navController.navigate(Screen.MainScreen.route) {
+                popUpTo(Screen.SplashScreen.route) {
+                    inclusive = true
+                }
+            }
+        }else{
+            navController.navigate(Screen.LoginScreen.route) {
+                popUpTo(Screen.SplashScreen.route) {
+                    inclusive = true
+                }
             }
         }
+
     }
     OrganDonationAppTheme {
         Scaffold {

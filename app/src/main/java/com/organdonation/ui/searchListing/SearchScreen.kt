@@ -103,7 +103,7 @@ fun SearchScreen(navController: NavController) {
                                 modifier = Modifier
                                     .padding(bottom = 10.dp, start = 10.dp, end = 10.dp)
                                     .fillMaxWidth()
-                                    .height(250.dp),
+                                    .height(300.dp),
                                 shape = RoundedCornerShape(10.dp),
                                 colors = CardDefaults.cardColors(containerColor = white),
                                 elevation = CardDefaults.cardElevation(defaultElevation = 5.dp)
@@ -155,14 +155,23 @@ fun SearchScreen(navController: NavController) {
                                     color = Color.Gray,
                                     modifier = Modifier.fillMaxWidth()
                                 )
-                                Spacer(Modifier.height(10.dp))
-                                Box(Modifier.padding(15.dp)) {
+                                Box(Modifier.padding(10.dp)) {
                                     RoundedButton(
-                                        text = "Donate",
+                                        text = "Donor Form",
                                         backgroundColor = black,
                                         textColor = white,
                                         onClick = {
-                                            navController.navigate(Screen.DonateScreen.route)
+                                            navController.navigate(Screen.DonorForm.route)
+                                        }
+                                    )
+                                }
+                                Box(Modifier.padding(10.dp)) {
+                                    RoundedButton(
+                                        text = "Donor Body Form",
+                                        backgroundColor = black,
+                                        textColor = white,
+                                        onClick = {
+                                            navController.navigate(Screen.DonorBodyForm.route)
                                         }
                                     )
                                 }

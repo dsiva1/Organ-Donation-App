@@ -4,7 +4,9 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.organdonation.ui.bookScreen.DonateScreen
+import com.organdonation.ui.donateScreen.DonateScreen
+import com.organdonation.ui.donorBodyForm.DonorBodyForm
+import com.organdonation.ui.donorForm.DonorForm
 import com.organdonation.ui.login.LoginScreen
 import com.organdonation.ui.main.MainScreen
 import com.organdonation.ui.register.RegisterScreen
@@ -36,6 +38,12 @@ fun Navigation() {
         }
         composable(route = Screen.DonateScreen.route) {
             DonateScreen(navController = navController)
+        }
+        composable(route = Screen.DonorForm.route) {
+            DonorForm(navController = navController)
+        }
+        composable(route = Screen.DonorBodyForm.route) {
+            DonorBodyForm(navController = navController)
         }
     }
 
