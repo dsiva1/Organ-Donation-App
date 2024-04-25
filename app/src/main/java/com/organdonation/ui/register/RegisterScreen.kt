@@ -47,6 +47,7 @@ fun RegisterScreen(navController: NavController) {
     val preference = remember {
         OrganPreference(context)
     }
+    var registerOrgan by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
@@ -149,11 +150,12 @@ fun RegisterScreen(navController: NavController) {
                             onClick = {
                                 if (name.isNotEmpty()) {
                                     if (email.isNotEmpty()) {
-                                        if (!isValidEmail(email.trim())) {
+                                        if (!isValidEmail(email)) {
                                             if (password.isNotEmpty()) {
+                                                registerOrgan = true
                                                 val user = hashMapOf(
                                                     "name" to name,
-                                                    "email" to email,
+                                                    "email" to email.lowercase(),
                                                     "password" to password
                                                 )
                                                 db.collection("users")
@@ -179,17 +181,20 @@ fun RegisterScreen(navController: NavController) {
                                                                             inclusive = true
                                                                         }
                                                                     }
+                                                                    registerOrgan = false
                                                                 }
                                                                 .addOnFailureListener { e ->
+
                                                                     Toast.makeText(
                                                                         context,
                                                                         e.message.toString(),
                                                                         Toast.LENGTH_SHORT
                                                                     ).show()
+                                                                    registerOrgan = false
                                                                 }
                                                         } else {
                                                             for (document in result) {
-                                                                if (document.data["email"] == email &&
+                                                                if (document.data["email"] == email.lowercase() &&
                                                                     document.data["password"] == password
                                                                 ) {
                                                                     Toast.makeText(
@@ -197,6 +202,7 @@ fun RegisterScreen(navController: NavController) {
                                                                         "Already exists.",
                                                                         Toast.LENGTH_SHORT
                                                                     ).show()
+                                                                    registerOrgan = false
                                                                     return@addOnSuccessListener
                                                                 } else {
                                                                     db.collection("users")
@@ -218,6 +224,7 @@ fun RegisterScreen(navController: NavController) {
                                                                                     inclusive = true
                                                                                 }
                                                                             }
+                                                                            registerOrgan = false
                                                                         }
                                                                         .addOnFailureListener { e ->
                                                                             Toast.makeText(
@@ -225,6 +232,7 @@ fun RegisterScreen(navController: NavController) {
                                                                                 e.message.toString(),
                                                                                 Toast.LENGTH_SHORT
                                                                             ).show()
+                                                                            registerOrgan = false
                                                                         }
                                                                 }
                                                             }
@@ -236,6 +244,7 @@ fun RegisterScreen(navController: NavController) {
                                                             exception.message.toString(),
                                                             Toast.LENGTH_SHORT
                                                         ).show()
+                                                        registerOrgan = false
                                                     }
                                             } else {
                                                 Toast.makeText(
@@ -307,7 +316,21 @@ fun RegisterScreen(navController: NavController) {
 
 
             }
-
+            if (registerOrgan) {
+                Dialog(
+                    onDismissRequest = { },
+                    DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)
+                ) {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .size(100.dp)
+                            .background(white, shape = RoundedCornerShape(8.dp))
+                    ) {
+                        CircularProgressIndicator(color = appColor)
+                    }
+                }
+            }
 
         }
     }
